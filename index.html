@@ -24,14 +24,14 @@
   </div>
 
   <script>
-    // Wczytujemy zmienne z GitHub Actions secrets
-    const FIREBASE_HOST = process.env.FIREBASE_HOST;
-    const FIREBASE_AUTH = process.env.FIREBASE_AUTH;
+    // Dane Firebase
+    const FIREBASE_HOST = "bazadanychdostronki-default-rtdb.europe-west1.firebasedatabase.app";
+    const FIREBASE_AUTH = "AIzaSyA5Ad-WJKhezBBaPBeWi1KQ1oH3-MVTlm4";
 
     const firebaseConfig = {
       apiKey: FIREBASE_AUTH,
       authDomain: "bazadanychdostronki.firebaseapp.com",
-      databaseURL: FIREBASE_HOST,  
+      databaseURL: `https://${FIREBASE_HOST}`,
       projectId: "bazadanychdostronki",
       storageBucket: "bazadanychdostronki.appspot.com",
       messagingSenderId: "112714680419",
@@ -73,41 +73,37 @@
         }]
       }
     });
-        
-        function updateCharts() {
-            firebase.database().ref('pomiar').on('value', function(snapshot) {
-                if (snapshot.val() != null) {
-                    const temp = snapshot.val().temp;
-                    const hum = snapshot.val().wilgotnosc;
-                    console.log("Dane z Firebase:", temp, hum);  // Sprawdzanie danych
+
+    // Funkcja do aktualizacji wykresów
+    function updateCharts() {
+      db.ref('pomiar').on('value', function(snapshot) {
+        if (snapshot.val() != null) {
+          const temp = snapshot.val().temp;
+          const hum = snapshot.val().wilgotnosc;
+          console.log("Dane z Firebase:", temp, hum);  // Sprawdzanie danych
                     
-                    // Aktualizacja wykresów
-                    tempData.push(temp);
-                    humData.push(hum);
-                    labels.push(new Date().toLocaleTimeString());
-        
-                    // Aktualizacja wykresów
-                    tempChart.update();
-                    humChart.update();
-                }
-            });
-        }
-
-
-      hRef.once('value').then(snapshot => {
-        const hum = snapshot.val();
-        if (hum !== null) {
-          if (humData.length > 20) {
-            humData.shift();
-          }
+          // Aktualizacja wykresów
+          tempData.push(temp);
           humData.push(hum);
+          labels.push(new Date().toLocaleTimeString());
+
+          // Jeśli jest więcej niż 20 danych, usuń najstarsze
+          if (tempData.length > 20) {
+            tempData.shift();
+            humData.shift();
+            labels.shift();
+          }
+
+          // Aktualizacja wykresów
+          tempChart.update();
           humChart.update();
         }
       });
     }
 
-    setInterval(updateCharts, 10000); 
-    updateCharts();
+    // Odświeżanie co 10 sekund
+    setInterval(updateCharts, 10000);
+    updateCharts(); // Uruchomienie funkcji od razu
   </script>
 </body>
 </html>
