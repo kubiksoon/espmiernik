@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Dane z ESP8266</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+  <h2>Wykres temperatury i wilgotności</h2>
+  <canvas id="tempChart" width="400" height="200"></canvas>
+  <canvas id="humChart" width="400" height="200"></canvas>
+
+  <script>
+    // Twoja konfiguracja Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyA5Ad-WJKhezBBaPBeWi1KQ1oH3-MVTlm4",
+      authDomain: "bazadanychdostronki.firebaseapp.com",
+      databaseURL: "https://bazadanychdostronki-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "bazadanychdostronki",
+      storageBucket: "bazadanychdostronki.appspot.com",
+      messagingSenderId: "112714680419",
+      appId: "1:112714680419:web:1790cbce2c8190a6c95056"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const tempCtx = document.getElementById('tempChart').getContext('2d');
+    const humCtx = document.getElementById('humChart').getContext('2d');
+
+    const tempChart = new Chart(tempCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Temperatura (°C)',
+          data: [],
+          borderColor: 'red',
+          fill: false
+        }]
+      }
+    });
+
+    const humChart = new Chart(humCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Wilgotność (%)',
+          data: [],
+          borderColor: 'blue',
+          fill: false
+        }]
+      }
+    });
+
+    function addData(chart, label, data) {
+      chart.data.labels.push(label);
+      chart.data.datasets[0].data.push(data);
+      chart.update();
+    }
+
+    setInterval(() => {
+      const now = new Date().toLocaleTimeString();
+
+      db.ref('/pomiar/temp').once('value').then((snapshot) => {
+        addData(tempChart, now, snapshot.val());
+      });
+
+      db.ref('/pomiar/wilgotnosc').once('value').then((snapshot) => {
+        addData(humChart, now, snapshot.val());
+      });
+    }, 60000); // co 1 minutę
+  </script>
+</body>
+</html>
