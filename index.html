@@ -15,9 +15,9 @@
   <script>
     // Twoja konfiguracja Firebase
     var firebaseConfig = {
-      apiKey: "AIzaSyA5Ad-WJKhezBBaPBeWi1KQ1oH3-MVTlm4",
-      authDomain: "bazadanychdostronki.firebaseapp.com",
-      databaseURL: "https://bazadanychdostronki-default-rtdb.europe-west1.firebasedatabase.app",
+      apiKey: process.env.FIREBASE_AUTH,
+      authDomain: process.env.FIREBASE_AUTH,
+      databaseURL: `https://${process.env.FIREBASE_HOST}/`,
       projectId: "bazadanychdostronki",
       storageBucket: "bazadanychdostronki.appspot.com",
       messagingSenderId: "112714680419",
