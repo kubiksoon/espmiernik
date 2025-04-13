@@ -1,78 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <title>Dane z ESP8266</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ESP Miernik</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h2>Wykres temperatury i wilgotności</h2>
-  <canvas id="tempChart" width="400" height="200"></canvas>
-  <canvas id="humChart" width="400" height="200"></canvas>
+<body class="bg-gray-100 text-gray-800 font-sans p-6">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-8">🌡️ ESP Miernik Temperatury i Wilgotności</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <canvas id="tempChart"></canvas>
+      </div>
+      <div>
+        <canvas id="humChart"></canvas>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // Twoja konfiguracja Firebase
-    var firebaseConfig = {
-      apiKey: process.env.FIREBASE_AUTH,
-      authDomain: process.env.FIREBASE_AUTH,
-      databaseURL: `https://${process.env.FIREBASE_HOST}/`,
+    // Wczytujemy zmienne z GitHub Actions secrets
+    const FIREBASE_HOST = process.env.FIREBASE_HOST;
+    const FIREBASE_AUTH = process.env.FIREBASE_AUTH;
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5Ad-WJKhezBBaPBeWi1KQ1oH3-MVTlm4",
+      authDomain: "bazadanychdostronki.firebaseapp.com",
+      databaseURL: FIREBASE_HOST,  
       projectId: "bazadanychdostronki",
       storageBucket: "bazadanychdostronki.appspot.com",
       messagingSenderId: "112714680419",
-      appId: "1:112714680419:web:1790cbce2c8190a6c95056"
+      appId: "1:112714680419:web:1790cbce2c8190a6c95056",
+      measurementId: "G-SD3Y75RVT2"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const tempCtx = document.getElementById('tempChart').getContext('2d');
-    const humCtx = document.getElementById('humChart').getContext('2d');
+    const tempChartCtx = document.getElementById('tempChart').getContext('2d');
+    const humChartCtx = document.getElementById('humChart').getContext('2d');
 
-    const tempChart = new Chart(tempCtx, {
+    const labels = [];
+    const tempData = [];
+    const humData = [];
+
+    const tempChart = new Chart(tempChartCtx, {
       type: 'line',
       data: {
-        labels: [],
+        labels: labels,
         datasets: [{
           label: 'Temperatura (°C)',
-          data: [],
-          borderColor: 'red',
-          fill: false
+          data: tempData,
+          borderColor: 'rgb(255, 99, 132)',
+          tension: 0.4
         }]
       }
     });
 
-    const humChart = new Chart(humCtx, {
+    const humChart = new Chart(humChartCtx, {
       type: 'line',
       data: {
-        labels: [],
+        labels: labels,
         datasets: [{
           label: 'Wilgotność (%)',
-          data: [],
-          borderColor: 'blue',
-          fill: false
+          data: humData,
+          borderColor: 'rgb(54, 162, 235)',
+          tension: 0.4
         }]
       }
     });
 
-    function addData(chart, label, data) {
-      chart.data.labels.push(label);
-      chart.data.datasets[0].data.push(data);
-      chart.update();
-    }
-
-    setInterval(() => {
+    function updateCharts() {
+      const tRef = db.ref('pomiar/temp');
+      const hRef = db.ref('pomiar/wilgotnosc');
       const now = new Date().toLocaleTimeString();
 
-      db.ref('/pomiar/temp').once('value').then((snapshot) => {
-        addData(tempChart, now, snapshot.val());
+      tRef.once('value').then(snapshot => {
+        const temp = snapshot.val();
+        if (temp !== null) {
+          if (labels.length > 20) {
+            labels.shift(); tempData.shift();
+          }
+          labels.push(now);
+          tempData.push(temp);
+          tempChart.update();
+        }
       });
 
-      db.ref('/pomiar/wilgotnosc').once('value').then((snapshot) => {
-        addData(humChart, now, snapshot.val());
+      hRef.once('value').then(snapshot => {
+        const hum = snapshot.val();
+        if (hum !== null) {
+          if (humData.length > 20) {
+            humData.shift();
+          }
+          humData.push(hum);
+          humChart.update();
+        }
       });
-    }, 60000); // co 1 minutę
+    }
+
+    setInterval(updateCharts, 60000); 
+    updateCharts();
   </script>
 </body>
 </html>
