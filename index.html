@@ -73,23 +73,26 @@
         }]
       }
     });
-
-    function updateCharts() {
-      const tRef = db.ref('pomiar/temp');
-      const hRef = db.ref('pomiar/wilgotnosc');
-      const now = new Date().toLocaleTimeString();
-
-      tRef.once('value').then(snapshot => {
-        const temp = snapshot.val();
-        if (temp !== null) {
-          if (labels.length > 20) {
-            labels.shift(); tempData.shift();
-          }
-          labels.push(now);
-          tempData.push(temp);
-          tempChart.update();
+        
+        function updateCharts() {
+            firebase.database().ref('pomiar').on('value', function(snapshot) {
+                if (snapshot.val() != null) {
+                    const temp = snapshot.val().temp;
+                    const hum = snapshot.val().wilgotnosc;
+                    console.log("Dane z Firebase:", temp, hum);  // Sprawdzanie danych
+                    
+                    // Aktualizacja wykresów
+                    tempData.push(temp);
+                    humData.push(hum);
+                    labels.push(new Date().toLocaleTimeString());
+        
+                    // Aktualizacja wykresów
+                    tempChart.update();
+                    humChart.update();
+                }
+            });
         }
-      });
+
 
       hRef.once('value').then(snapshot => {
         const hum = snapshot.val();
@@ -103,7 +106,7 @@
       });
     }
 
-    setInterval(updateCharts, 60000); 
+    setInterval(updateCharts, 10000); 
     updateCharts();
   </script>
 </body>
