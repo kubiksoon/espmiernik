@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ESP Miernik</title>
+  <title>Miernik</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -12,7 +12,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans p-6">
   <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-8">🌡️ ESP Miernik Temperatury i Wilgotności</h1>
+    <h1 class="text-3xl font-bold text-center mb-8">🌡️Miernik Temperatury i Wilgotności</h1>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div>
@@ -103,7 +103,7 @@
     }
 
     // Odświeżanie co 10 sekund
-    setInterval(updateCharts, 10000);
+    setInterval(updateCharts, 1000);
     updateCharts(); // Uruchomienie funkcji od razu
   </script>
 </body>
